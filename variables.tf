@@ -31,15 +31,27 @@ variable "description" {
 }
 
 variable "tags" {
-  description = "A mapping of tags to assign to security group"
+  description = "A set of string tags to assign to security group"
   type        = set(string)
   default     = []
 }
 
 variable "delete_default_rules" {
   type        = bool
-  description = "Delete default security group rules"
+  description = "Whether to delete default security group rules"
   default     = true
+}
+
+variable "stateful" {
+  description = "Indicates if the security group is stateful or stateless"
+  type        = bool
+  default     = true
+}
+
+variable "region" {
+  description = "Region where the security group is located"
+  type        = string
+  default     = "main"
 }
 
 ####################
@@ -55,27 +67,6 @@ variable "default_ipv6_remote_ip_prefix" {
   description = "Default remote CIDR to use for IPv6"
   type        = string
   default     = "::/0"
-}
-
-###############
-# Generic rules
-###############
-variable "rules" {
-  description = "List of ingress and/or egress rules"
-  type        = list(map(string))
-  default     = []
-}
-
-variable "rules_ipv4" {
-  description = "List of ingress and/or egress rules"
-  type        = list(map(string))
-  default     = []
-}
-
-variable "rules_ipv6" {
-  description = "List of ingress and/or egress rules"
-  type        = list(map(string))
-  default     = []
 }
 
 ##########
