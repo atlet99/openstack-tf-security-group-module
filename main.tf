@@ -1,16 +1,19 @@
 resource "random_id" "this" {
-  for_each    = var.create && var.use_name_prefix && var.name_prefix == "" ? { "id" = 1 } : {}
+  keepers = {
+    name_prefix = var.name_prefix
+  }
   byte_length = 8
 }
 
 ##################################
-# Создание Security Group
+# Create Security Group
 ##################################
 resource "openstack_networking_secgroup_v2" "this" {
   for_each = var.create && false == var.use_name_prefix ? { "id" = 1 } : {}
 
   name        = local.this_sg_name
   description = var.description
+
   tags                 = var.tags
   delete_default_rules = var.delete_default_rules
   stateful             = var.stateful
@@ -22,7 +25,7 @@ resource "openstack_networking_secgroup_v2" "this" {
 
 locals {
   this_sg_id   = try(openstack_networking_secgroup_v2.this["id"].id, "")
-  this_sg_name = var.use_name_prefix ? (var.name_prefix == "" ? "${random_id.this["id"].hex}-${var.name}" : "${var.name_prefix}-${var.name}") : var.name
+  this_sg_name = var.use_name_prefix ? (var.name_prefix == "" ? "${random_id.this.hex}-${var.name}" : "${var.name_prefix}-${var.name}") : var.name
 }
 
 ######################
