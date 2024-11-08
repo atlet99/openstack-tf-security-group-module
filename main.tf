@@ -63,5 +63,5 @@ resource "openstack_networking_secgroup_rule_v2" "rules" {
   port_range_max     = lookup(each.value, "port", lookup(each.value, "port_range_max", null))
   description        = each.value.description
   remote_ip_prefix   = lookup(each.value, "remote_ip_prefix", null) != null ? each.value.remote_ip_prefix : (each.value.ethertype == "IPv6" ? var.default_ipv6_remote_ip_prefix : var.default_ipv4_remote_ip_prefix)
-  remote_group_id    = each.value.remote_group_id == "@self" ? local.this_sg_id : each.value.remote_group_id
+  remote_group_id    = lookup(each.value, "remote_group_id", null) == "@self" ? local.this_sg_id : lookup(each.value, "remote_group_id", null)
 }
