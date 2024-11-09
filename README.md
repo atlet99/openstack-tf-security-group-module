@@ -1,8 +1,5 @@
 # Terraform OpenStack Security Group Module
 
-[![Terraform module](https://img.shields.io/badge/dynamic/json.svg?url=https://registry.terraform.io/v1/modules/haxorof/security-group/openstack&label=haxorof/security-group/openstack&query=$.version&color=blue)](https://registry.terraform.io/modules/haxorof/security-group/openstack)
-![Module downloads](https://img.shields.io/badge/dynamic/json.svg?url=https://registry.terraform.io/v1/modules/haxorof/security-group/openstack&label=downloads&query=$.downloads&color=green)
-
 Terraform module which creates security groups on OpenStack.
 
 ## Features
@@ -89,10 +86,6 @@ module "raw_rules_sg" {
 }
 ```
 
-## Examples
-
-* [Mixed Security Group examples](https://github.com/haxorof/terraform-openstack-security-group/blob/master/examples/mixed)
-
 ## License
 
-This is an open source project under the [MIT](https://github.com/haxorof/terraform-openstack-security-group/blob/master/LICENSE) license.
+This is an open source project under the [MIT](https://github.com/atlet99/openstack-tf-security-group-module/blob/master/LICENSE) license.
