@@ -2,6 +2,8 @@
 
 Terraform module which creates security groups on OpenStack.
 
+**Note:** This module requires **Terraform version 1.5.0** or higher and **OpenStack provider version 3.0.0** or higher.
+
 ## Features
 
 This module aims to implement many combinations of arguments supported by OpenStack and latest stable version of Terraform:
