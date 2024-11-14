@@ -51,7 +51,7 @@ variable "stateful" {
 variable "region" {
   description = "Region where the security group is located"
   type        = string
-  default     = "main"
+  default = ""
 }
 
 ####################

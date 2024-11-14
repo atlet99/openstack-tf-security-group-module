@@ -5,5 +5,5 @@ output "security_group_id" {
 
 output "security_group_name" {
   description = "The name of the security group"
-  value       = try(openstack_networking_secgroup_v2.this[0].name, "")
+  value       = try(values(openstack_networking_secgroup_v2.this)[0].name, "")
 }
