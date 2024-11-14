@@ -54,14 +54,19 @@ locals {
 resource "openstack_networking_secgroup_rule_v2" "rules" {
   for_each           = var.create ? { for idx, rule in local.rules : idx => rule } : {}
 
-  region             = var.region
+  region             = var.region == null ? null : var.region
   security_group_id  = local.this_sg_id
   direction          = each.value.direction
   ethertype          = each.value.ethertype
-  protocol           = lookup(each.value, "protocol", "")
+  protocol           = lookup(each.value, "protocol", null)
   port_range_min     = lookup(each.value, "port", lookup(each.value, "port_range_min", null))
   port_range_max     = lookup(each.value, "port", lookup(each.value, "port_range_max", null))
   description        = each.value.description
-  remote_ip_prefix   = lookup(each.value, "remote_ip_prefix", null) != null ? each.value.remote_ip_prefix : (each.value.ethertype == "IPv6" ? var.default_ipv6_remote_ip_prefix : var.default_ipv4_remote_ip_prefix)
-  remote_group_id    = lookup(each.value, "remote_group_id", null) == "@self" ? local.this_sg_id : lookup(each.value, "remote_group_id", null)
+
+  # Set remote_ip_prefix only if it is provided and remote_group_id is null
+  remote_ip_prefix   = lookup(each.value, "remote_ip_prefix", null) != null && lookup(each.value, "remote_group_id", null) == null ? each.value.remote_ip_prefix : null
+
+  # Set remote_group_id if it is set to "@self" or if remote_ip_prefix is null
+  # Using local.this_sg_id when remote_group_id is "@self"
+  remote_group_id    = lookup(each.value, "remote_group_id", null) == "@self" ? local.this_sg_id : (lookup(each.value, "remote_group_id", null) != null && lookup(each.value, "remote_ip_prefix", null) == null ? lookup(each.value, "remote_group_id", null) : null)
 }
