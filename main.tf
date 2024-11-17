@@ -75,9 +75,13 @@ resource "openstack_networking_secgroup_rule_v2" "rules" {
   # If "remote_group_id" is set to "@self", use the current security group ID (local.this_sg_id).
   # If "remote_group_id" is not null and "remote_ip_prefix" is null, use the value of "remote_group_id".
   # Otherwise, set the value to null.
-  remote_group_id = lookup(each.value, "remote_group_id", null) == "@self"
+  remote_group_id = (
+    lookup(each.value, "remote_group_id", null) == "@self"
     ? local.this_sg_id
-    : (lookup(each.value, "remote_group_id", null) != null && lookup(each.value, "remote_ip_prefix", null) == null
+    : (
+      lookup(each.value, "remote_group_id", null) != null && lookup(each.value, "remote_ip_prefix", null) == null
       ? lookup(each.value, "remote_group_id", null)
-      : null)
+      : null
+    )
+  )
 }
