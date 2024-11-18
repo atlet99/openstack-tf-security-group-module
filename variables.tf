@@ -51,41 +51,36 @@ variable "stateful" {
 variable "region" {
   description = "Region where the security group is located"
   type        = string
-  default = ""
-}
-
-####################
-# Defaults for rules
-####################
-variable "default_ipv4_remote_ip_prefix" {
-  description = "Default remote CIDR to use for IPv4"
-  type        = string
-  default     = "0.0.0.0/0"
-}
-
-variable "default_ipv6_remote_ip_prefix" {
-  description = "Default remote CIDR to use for IPv6"
-  type        = string
-  default     = "::/0"
+  default     = ""
 }
 
 ##########
 # Ingress
 ##########
 variable "ingress_rules" {
-  description = "List of maps defining ingress rules to create"
-  type        = list(map(string))
-  default     = []
-}
+  description = <<EOT
+List of ingress rules. Each rule can define:
+- `protocol` (optional): Protocol to allow (e.g., "tcp", "udp", "icmp").
+- `port` or `port_range_min`/`port_range_max` (optional): Single port or range.
+- `remote_ip_prefix` (optional): CIDR for allowed source IPs (determines ethertype).
+- `remote_group_id` (optional): Security group ID for allowed source.
+- `description` (optional): Description of the rule.
 
-variable "ingress_rules_ipv4" {
-  description = "List of maps defining IPv4 ingress rules to create"
-  type        = list(map(string))
-  default     = []
-}
-
-variable "ingress_rules_ipv6" {
-  description = "List of maps defining IPv6 ingress rules to create"
+Example:
+[
+  {
+    protocol        = "tcp"
+    port            = 22
+    remote_ip_prefix = "0.0.0.0/0"
+    description     = "Allow SSH"
+  },
+  {
+    protocol        = "icmp"
+    remote_ip_prefix = "::/0"
+    description     = "Allow ICMP over IPv6"
+  }
+]
+EOT
   type        = list(map(string))
   default     = []
 }
@@ -94,19 +89,26 @@ variable "ingress_rules_ipv6" {
 # Egress
 #########
 variable "egress_rules" {
-  description = "List of maps defining egress rules to create"
+  description = <<EOT
+List of egress rules. Each rule can define:
+- Same structure as `ingress_rules`.
+
+Example:
+[
+  {
+    protocol        = "tcp"
+    port            = 22
+    remote_ip_prefix = "0.0.0.0/0"
+    description     = "Allow SSH"
+  },
+  {
+    protocol        = "icmp"
+    remote_ip_prefix = "::/0"
+    description     = "Allow ICMP over IPv6"
+  }
+]
+EOT
   type        = list(map(string))
   default     = []
 }
 
-variable "egress_rules_ipv4" {
-  description = "List of maps defining IPv4 egress rules to create"
-  type        = list(map(string))
-  default     = []
-}
-
-variable "egress_rules_ipv6" {
-  description = "List of maps defining IPv6 egress rules to create"
-  type        = list(map(string))
-  default     = []
-}
