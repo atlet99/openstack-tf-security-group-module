@@ -2,91 +2,113 @@
 
 Terraform module which creates security groups on OpenStack.
 
-**Note:** This module requires **Terraform version 1.5.0** or higher and **OpenStack provider version 3.0.0** or higher.
-
 ## Features
 
-This module aims to implement many combinations of arguments supported by OpenStack and latest stable version of Terraform:
+- Supports creation of security groups with dynamic names and tags.
+- Allows defining stateful or stateless security groups.
+- Supports custom ingress and egress rules with detailed configurations.
+- Automatically handles IPv4/IPv6 rules based on the provided IP prefixes.
 
-* Full control of security group rules if need.
-* Ingress and egress rule blocks for convenience.
-* Support to separate IPv4 and IPv6 rules in different lists.
+## Requirements
 
-## Terraform versions
-
-Terraform 0.13.
+- `Terraform >= 1.5.0`
+- `Terraform OpenStack Provider ~> 3.0.0`
+- `Terraform Random Provider >= 3.6.3`
 
 ## Usage
 
-There are several ways to use this module but here are two examples below:
-
-### Ingress/Egress rule blocks
-
-`ingress_rules` and `egress_rules` blocks lets you define and separate these rules in different lists which might be useful in some situations. Values for the defined keys are limited what is described in the documentation for [OpenStack Neutron Security Group Rule v2](https://www.terraform.io/docs/providers/openstack/r/networking_secgroup_rule_v2.html):
-
-| Key | Description | Example |
-| --- | --- | ---|
-| description | A description of the rule. | `HTTP` |
-| protocol | The layer 4 protocol type. | `tcp` |
-| port_range_min | The lower part of the allowed port range. | `8080` |
-| port_range_max | The higher part of the allowed port range. | `8081` |
-| port | One port instead of range. Overrides `port_range_min`and `port_range_max`. | `80` |
-| remote_ip_prefix | The remote CIDR. | `0.0.0.0/0` |
-| remote_group_id | The remote group id. If same group ID shall be referenced then write `@self` | `@self` |
+### Basic Example
 
 ```hcl
-module "ingress_egress_rules_sg" {
-  source      = "haxorof/security-group/openstack"
-  name        = "ingress-egress-rules-sg"
-  description = "Security group that allows inbound VRRP within the group (IPv4), HTTPS/HTTP open for any (IPv4+IPv6)."
+module "security_group" {
+  source = "github.com/atlet99/openstack-tf-security-group-module?ref=v1.0.0"
+
+  name               = "my-security-group"
+  name_prefix        = "project"
+  use_name_prefix    = true
+  description        = "Security group for my project"
+  tags               = ["tag1", "tag2"]
+  delete_default_rules = true
+  stateful           = true
+  region             = "main"
 
   ingress_rules = [
-    { description = "HTTPS", protocol = "tcp", port = 443 },
-    { description = "HTTP", protocol = "tcp", port = 80 },
+    {
+      protocol        = "tcp"
+      port            = 22
+      remote_ip_prefix = "0.0.0.0/0"
+      description     = "Allow SSH access"
+    },
+    {
+      protocol        = "icmp"
+      remote_ip_prefix = "::/0"
+      description     = "Allow ICMP over IPv6"
+    }
   ]
 
-  ingress_rules_ipv4 = [
-    { description = "VRRP", protocol = "vrrp", remote_group_id = "@self" },
-  ]
-
-  egress_rules_ipv4 = [
-    { description = "VRRP", protocol = "vrrp", remote_group_id = "@self" },
+  egress_rules = [
+    {
+      protocol        = "tcp"
+      port            = 80
+      remote_ip_prefix = "0.0.0.0/0"
+      description     = "Allow HTTP traffic"
+    },
+    {
+      protocol        = "tcp"
+      port            = 443
+      remote_ip_prefix = "0.0.0.0/0"
+      description     = "Allow HTTPS traffic"
+    }
   ]
 }
 ```
 
-### Rule blocks
+## Outputs
 
-`rules` block is the most raw form but also gives you the most flexibility. Values for the defined keys are limited what is described in the documentation for [OpenStack Neutron Security Group Rule v2](https://www.terraform.io/docs/providers/openstack/r/networking_secgroup_rule_v2.html):
-
-| Key | Description | Example |
-| --- | --- | ---|
-| description | A description of the rule. | `HTTP` |
-| direction | The direction of the rule. | `ingress` |
-| protocol | The layer 4 protocol type. | `tcp` |
-| port_range_min | The lower part of the allowed port range. | `8080` |
-| port_range_max | The higher part of the allowed port range. | `8081` |
-| port | One port instead of range. Overrides `port_range_min`and `port_range_max`. | `80` |
-| remote_ip_prefix | The remote CIDR. | `0.0.0.0/0` |
-| remote_group_id | The remote group id. If same group ID shall be referenced then write `@self` | `@self` |
-
+After applying this module, you can retrieve the following outputs:
 ```hcl
-module "raw_rules_sg" {
-  source      = "haxorof/security-group/openstack"
-  name        = "raw-rules-sg"
-  description = "Security group that allows inbound VRRP within the group (IPv4), HTTPS/HTTP open for any (IPv4+IPv6)."
+output "security_group_id" {
+  value = module.security_group.security_group_id
+}
 
-  rules = [
-    { description = "HTTPS", direction = "ingress", protocol = "tcp", port = 443 },
-    { description = "HTTP", direction = "ingress", protocol = "tcp", port = 80 },
-  ]
-
-  rules_ipv4 = [
-    { description = "VRRP", direction = "ingress", protocol = "vrrp", remote_group_id = "@self" },
-    { description = "VRRP", direction = "egress", protocol = "vrrp", remote_group_id = "@self" },
-  ]
+output "security_group_name" {
+  value = module.security_group.security_group_name
 }
 ```
+
+## Inputs
+
+### Security Group Configuration:
+
+| Name                | Description                                           | Type        | Default                |
+|---------------------|-------------------------------------------------------|-------------|------------------------|
+| create              | Whether to creater the security group and its rules   | bool        | true                   |
+| name                | Name of the security group                            | string      | N/A                    |
+| name_prefix         | Prefix to prepend to the security group name          | string      | ""                     |
+| use_name_prefix     | Whether to use the name prefix                        | bool        | false                  |
+| description         | Description of the security group                     | string      | "Managed by Terraform" |
+| tags                | Tags to assign to the security group                  | set(string) | []                     |
+| delete_default_rule | Whether to delete default rules in the security group | bool        | false                  |
+| stateful            | Whether the security group is stateful                | bool        | true                   |
+| region              | OpenStack region                                      | string      | ""                     |
+
+### Rule Configuration:
+
+| Name         | Description                                    | Type      | Default |
+|--------------|------------------------------------------------|-----------|---------|
+| ingress_rule | List of ingress rules (see example for format) | list(map) | []      |
+| egress_rule  | List of egress rules (see example for format)  | list(map) | []      |
+
+### Outputs
+| Name                | Description                            |
+|---------------------|----------------------------------------|
+| security_group_id   | The ID of the created security group   |
+| security_group_name | The name of the created security group |
+
+## Notes
+
+* The module dynamically determines the ethertype (IPv4/IPv6) for rules based on IP prefix format.
+* Format remote_group_id, you can use `@self` to reference the current security group.
 
 ## License
 
