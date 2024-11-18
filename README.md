@@ -23,41 +23,41 @@ Terraform module which creates security groups on OpenStack.
 module "security_group" {
   source = "github.com/atlet99/openstack-tf-security-group-module?ref=v1.0.0"
 
-  name               = "my-security-group"
-  name_prefix        = "project"
-  use_name_prefix    = true
-  description        = "Security group for my project"
-  tags               = ["tag1", "tag2"]
+  name                 = "my-security-group"
+  name_prefix          = "project"
+  use_name_prefix      = true
+  description          = "Security group for my project"
+  tags                 = ["tag1", "tag2"]
   delete_default_rules = true
-  stateful           = true
-  region             = "main"
+  stateful             = true
+  region               = "main"
 
   ingress_rules = [
     {
-      protocol        = "tcp"
-      port            = 22
+      protocol         = "tcp"
+      port             = 22
       remote_ip_prefix = "0.0.0.0/0"
-      description     = "Allow SSH access"
+      description      = "Allow SSH access"
     },
     {
-      protocol        = "icmp"
+      protocol         = "icmp"
       remote_ip_prefix = "::/0"
-      description     = "Allow ICMP over IPv6"
+      description      = "Allow ICMP over IPv6"
     }
   ]
 
   egress_rules = [
     {
-      protocol        = "tcp"
-      port            = 80
+      protocol         = "tcp"
+      port             = 80
       remote_ip_prefix = "0.0.0.0/0"
-      description     = "Allow HTTP traffic"
+      description      = "Allow HTTP traffic"
     },
     {
-      protocol        = "tcp"
-      port            = 443
+      protocol         = "tcp"
+      port             = 443
       remote_ip_prefix = "0.0.0.0/0"
-      description     = "Allow HTTPS traffic"
+      description      = "Allow HTTPS traffic"
     }
   ]
 }
